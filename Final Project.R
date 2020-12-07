@@ -8,6 +8,11 @@
 library(rvest)
 library(xml2)
 library(Hmisc)
+library(openxlsx)
+
+#set file's directory as working directory 
+setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
+getwd()
 
 # Exercise 1
 
@@ -17,14 +22,18 @@ library(Hmisc)
 # If you can, import the data directly from the following link:
 # https://www.idescat.cat/pub/?id=aec&n=218&t=2000
 
+# each year has a different url that is stored in the url vector
 years <- 2000:2019
-url <- paste("https://www.idescat.cat/pub/?id=aec&n=218&t=", 2000:2019, sep = "")
+url <- paste("https://www.idescat.cat/pub/?id=aec&n=218&t=", years, sep = "")
 tbls <- vector(mode = "list")
 
+# reads the html of each url, after cleansing and parsing the data is stored in
+# a data frame.
 for (i in 1:length(url)) {
   webpage <- read_html(url[i])
   tbl <- html_nodes(webpage, "table")
 
+  # removing unwanted HTML code to make parsing easier
   xml_remove(xml_find_all(tbl[[1]], "//caption"))
   xml_remove(xml_find_all(tbl[[1]], "//tfoot"))
   xml_remove(xml_find_all(tbl[[1]], "//colgroup"))
@@ -34,6 +43,7 @@ for (i in 1:length(url)) {
   xml_remove(xml_find_all(tbl[[1]], "//tr[@class=' darrera total']"))
   xml_remove(xml_find_all(tbl[[1]], "//th[@colspan]"))
   
+  # parsing from HTML table to R
   tbls[i] <-  html_table(tbl, fill = TRUE, header = TRUE, trim = FALSE) 
   tbls[[i]] <- tbls[[i]][-6:-9]
   tbls[[i]] <- na.exclude(tbls[[i]])
@@ -42,6 +52,7 @@ for (i in 1:length(url)) {
   rownames(tbls[[i]]) <- 1:12
   tbls[[i]] <- tbls[[i]][-1]
   
+  # adds date column for each observation
   tbls[[i]] <- cbind(
     date = as.Date(
       paste(years[i], 1:12, 1, sep = "-")
@@ -50,8 +61,12 @@ for (i in 1:length(url)) {
   )
 }
 
+# consolidates all years in a single data frame
 sea.deep <- do.call(rbind, tbls[1:length(url)])
+rm(tbl)
+rm(tbls)
 
+# converts char columns to numeric columns
 for (i in 2:5) {
   sea.deep[, i] <- as.numeric(sub(",", ".", sea.deep[, i]))
 }
@@ -64,19 +79,48 @@ for (i in 2:5) {
 # b
 # Use the function label of package Hmsic to tag variables
 # (using of data frame sea.deep).
+label(sea.deep) <- "Catalonia's seawater monthly average temperature at different depths (2000-2019)"
+label(sea.deep$date) <- "Observation date (yyyy-mm-dd)"
+label(sea.deep$'0') <- "Average temperature at 0m (in Celsius)"
+label(sea.deep$'-20') <- "Average temperature at -20m (in Celsius)"
+label(sea.deep$'-50') <- "Average temperature at -50m (in Celsius)"
+label(sea.deep$'-80') <- "Average temperature at -80m (in Celsius)"
 
 # c
 # Indicate the dimension of the data-frame and make a descriptive
 # summary of the variables.
 
+dim(sea.deep) # 240 observations of 5 variables
+summary(sea.deep) 
+attributes(sea.deep)
+describe(sea.deep)
+
+# to do: agregar mas funciones/graficas de GrB_R8_DescriptiveAnalysis
+
 # d
 # Represent by means of Boxplots the average temperatures by 
 # depth and year.
+
+# finish later
+boxplot(sea.deep$'0' ~ format(sea.deep$date, '%Y'),
+        main = "Average temperatures by depth and year",
+        xlab = "Year", ylab = "Avg. temperature (C)")
+
 
 # e
 # Calculate the mean, median, standard deviation, and the
 # interquartile range for each of the previous groups (or other
 # statistics if necessary).
+
+# repeats the process for each depth
+for (i in c(2,3,4,5)) {
+  cat(paste("\nstats for ", names(sea.deep[i]), "m depth:", sep = ""))
+  cat(paste("\nmean: ", round(mean(sea.deep[, i]), 2)))
+  cat(paste("\nmedian: ", median(sea.deep[, i])))
+  cat(paste("\nstandard dev: ", round(sd(sea.deep[, i]), 2)))
+  cat(paste("\ninterquartile range: ", IQR(sea.deep[, i])))
+  cat("\n")
+}
 
 # f
 # Properly represent the data to be able to see the annual variations
@@ -85,6 +129,8 @@ for (i in 2:5) {
 # g
 # Export data frame with the new variables created to a new file
 # sheet, for example in NUEVO.xlsx
+
+write.xlsx(sea.deep, "NUEVO.xlsx") # stored in working directory
 
 # Exercise 2
 
