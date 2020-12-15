@@ -9,6 +9,8 @@ library(rvest)
 library(xml2)
 library(Hmisc)
 library(openxlsx)
+library(Epi)
+library(doBy)
 
 #set file's directory as working directory 
 setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
@@ -65,6 +67,7 @@ for (i in 1:length(url)) {
 sea.deep <- do.call(rbind, tbls[1:length(url)])
 rm(tbl)
 rm(tbls)
+rm(i)
 
 # converts char columns to numeric columns
 for (i in 2:5) {
@@ -90,12 +93,40 @@ label(sea.deep$'-80') <- "Average temperature at -80m (in Celsius)"
 # Indicate the dimension of the data-frame and make a descriptive
 # summary of the variables.
 
+# A previous statments: 
+View(sea.deep)
+colSums(is.na(sea.deep)) # We assure there is no empty spaces in the dataframe, thus, 
+                         # the analysis can aboid worrying about it.
+
+# Dimension and descriptive summary:
 dim(sea.deep) # 240 observations of 5 variables
 summary(sea.deep) 
+
+# Descriptve analysis of the data set.
 attributes(sea.deep)
 describe(sea.deep)
+str(sea.deep)
 
 # to do: agregar mas funciones/graficas de GrB_R8_DescriptiveAnalysis
+# To analize and compare results, first we create a new factorized variable form the original dates.
+sea.deep$date
+date.ch <- format(sea.deep$date, "%Y")
+date.fac <- factor(date.ch, unique(date.ch))
+sea.deep$datefactor <- date.fac
+levels(sea.deep[,6])
+
+# With library Epi
+stat.table(list(Year = datefactor), list(N = count(), 
+                                         "Mean Tempreature at 0m (in Celcius)" = mean(sea.deep$`0`),
+                                         "Mean Tempreature at -20m (in Celcius)" = mean(sea.deep$`-20`),
+                                         "Mean Tempreature at -50m (in Celcius)" = mean(sea.deep$`-50`),
+                                         "Mean Tempreature at -80m (in Celcius)" = mean(sea.deep$`-80`)),
+           data = sea.deep, margins = T)
+
+# With library doBy
+#library(doBy)
+summaryBy(sea.deep$`0` ~ sea.deep$datefactor, data = sea.deep, FUN = c(mean))
+# Produce un error. No interpreta que ambos vectores tengan la misma longitud
 
 # d
 # Represent by means of Boxplots the average temperatures by 
