@@ -73,6 +73,7 @@ rm(i)
 for (i in 2:5) {
   sea.deep[, i] <- as.numeric(sub(",", ".", sea.deep[, i]))
 }
+rm(i)
 
 # Name the variables according to the specifications in the data
 # set and place labels describing units and what each variable
@@ -117,16 +118,11 @@ levels(sea.deep[,6])
 
 # With library Epi
 stat.table(list(Year = datefactor), list(N = count(), 
-                                         "Mean Tempreature at 0m (in Celcius)" = mean(sea.deep$`0`),
-                                         "Mean Tempreature at -20m (in Celcius)" = mean(sea.deep$`-20`),
-                                         "Mean Tempreature at -50m (in Celcius)" = mean(sea.deep$`-50`),
-                                         "Mean Tempreature at -80m (in Celcius)" = mean(sea.deep$`-80`)),
-           data = sea.deep, margins = T)
-
-# With library doBy
-#library(doBy)
-summaryBy(sea.deep$`0` ~ sea.deep$datefactor, data = sea.deep, FUN = c(mean))
-# Produce un error. No interpreta que ambos vectores tengan la misma longitud
+"Mean Tempreature at 0m (in Celcius)" = mean(sea.deep$`0`),
+"Mean Tempreature at -20m (in Celcius)" = mean(sea.deep$`-20`),
+"Mean Tempreature at -50m (in Celcius)" = mean(sea.deep$`-50`),
+"Mean Tempreature at -80m (in Celcius)" = mean(sea.deep$`-80`)),
+data = sea.deep, margins = T)
 
 # d
 # Represent by means of Boxplots the average temperatures by 
@@ -137,7 +133,12 @@ boxplot(sea.deep$'0' ~ format(sea.deep$date, '%Y'),
         main = "Average temperatures by depth and year",
         xlab = "Year", ylab = "Avg. temperature (C)")
 
-
+# Igual así te parece bien
+# Here its represented the average temperature by depth and years. Means of boxplots.
+for (i in c(2,3,4,5)){
+  boxplot(sea.deep[,i]~sea.deep$datefactor, ylab = 'Temperature', xlab = 'Study years', col = 3:7, pch=16)
+  title(label(sea.deep[i]))
+}
 # e
 # Calculate the mean, median, standard deviation, and the
 # interquartile range for each of the previous groups (or other
@@ -156,6 +157,11 @@ for (i in c(2,3,4,5)) {
 # f
 # Properly represent the data to be able to see the annual variations
 # of the average temperature in the total depths and years.
+
+sea.deep$diff_mean_0 <- with(sea.deep, as.vector(trunc(sea.deep$`0`-mean(sea.deep$`0`))))
+sea.deep$dev_mean_minus20 <- with(sea.deep, as.vector(trunc(sea.deep$`-20`-mean(sea.deep$`-20`))))
+sea.deep$dev_mean_minus50 <- with(sea.deep, as.vector(trunc(sea.deep$`-50`-mean(sea.deep$`-50`))))
+sea.deep$dev_mean_minus80 <- with(sea.deep, as.vector(trunc(sea.deep$`-80`-mean(sea.deep$`-80`))))
 
 # g
 # Export data frame with the new variables created to a new file
