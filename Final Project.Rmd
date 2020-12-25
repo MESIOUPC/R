@@ -1,0 +1,284 @@
+
+---
+title: "R Final Project 2020-2021"
+author: "Nuria Saavedra Mir? and Ferran Vilar Pag?s"
+date: "December 31, 2020"
+output: pdf_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(rvest)
+library(xml2)
+library(Hmisc)
+library(openxlsx)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(Epi)
+library(doBy)
+
+#set file's directory as working directory 
+setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
+getwd()
+```
+
+# Exercise 1
+
+## a
+Import the study data (sea_temperature.xls) and place them in a data frame named sea.deep. If you can, import the data directly from the following link: https://www.idescat.cat/pub/?id=aec&n=218&t=2000
+
+```{r}
+# each year has a different url that is stored in the url vector
+years <- 2000:2019
+url <- paste("https://www.idescat.cat/pub/?id=aec&n=218&t=", years, sep = "")
+tbls <- vector(mode = "list")
+tbls_historical <- vector(mode = "list")
+
+# reads the html of each url, after cleansing and parsing the data is stored in
+# a data frame.
+for (i in 1:length(url)) {
+  webpage <- read_html(url[i])
+  tbl <- html_nodes(webpage, "table")
+
+  # removing unwanted HTML code to make parsing easier
+  xml_remove(xml_find_all(tbl[[1]], "//caption"))
+  xml_remove(xml_find_all(tbl[[1]], "//tfoot"))
+  xml_remove(xml_find_all(tbl[[1]], "//colgroup"))
+  xml_remove(xml_child(xml_child(tbl[[1]], 1), 1))
+  xml_remove(xml_find_all(tbl[[1]], "//tr[@class=' total']"))
+  xml_remove(xml_find_all(tbl[[1]], "//tr[@class=' primera total']"))
+  xml_remove(xml_find_all(tbl[[1]], "//tr[@class=' darrera total']"))
+  xml_remove(xml_find_all(tbl[[1]], "//th[@colspan]"))
+  
+  # parsing from HTML table to R
+  tbls[i] <-  html_table(tbl, fill = TRUE, header = TRUE, trim = FALSE) 
+  tbls[[i]] <- tbls[[i]][-6:-9]
+  tbls[[i]] <- na.exclude(tbls[[i]])
+  
+  tbls_historical[[i]] <- tail(tbls[[i]], 12) # historical values ie. periode 1974-1999
+  rownames(tbls_historical[[i]]) <- 1:12
+  tbls_historical[[i]] <- tbls_historical[[i]][-1]
+  
+  tbls[[i]] <- head(tbls[[i]], 12) # current year values
+  rownames(tbls[[i]]) <- 1:12
+  tbls[[i]] <- tbls[[i]][-1]
+  
+  # adds date column for each observation
+  tbls_historical[[i]] <- cbind(
+    date = as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+    ),
+    year = format(as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+      ), '%Y'),
+    month = format(as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+    ), '%m'),
+    tbls_historical[[i]]
+  )
+  
+  tbls[[i]] <- cbind(
+    date = as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+    ),
+    year = format(as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+    ), '%Y'),
+    month = format(as.Date(
+      paste(years[i], 1:12, 1, sep = "-")
+    ), '%m'),
+    tbls[[i]]
+  )
+}
+
+# consolidates all years in two data frames: current year values and historical values
+sea.deep <- do.call(rbind, tbls[1:length(url)])
+sea.deep.historical <- do.call(rbind, tbls_historical[1:length(url)])
+rm(tbl)
+rm(tbls)
+rm(tbls_historical)
+
+# converts char columns to numeric columns
+for (i in 4:7) {
+  sea.deep[, i] <- as.numeric(sub(",", ".", sea.deep[, i]))
+  sea.deep.historical[, i] <- as.numeric(sub(",", ".", sea.deep.historical[, i]))
+}
+```
+
+Name the variables according to the specifications in the dataset and place labels describing units and what each variable and case is (years, months, depth, etc.). You should place it properly according to the format of the data.
+
+## b
+Use the function label of package Hmsic to tag variables (using of data frame sea.deep).
+
+```{r}
+label(sea.deep) <- "Catalonia's seawater monthly average temperature at different depths (2000-2019)"
+label(sea.deep$date) <- "Observation date (yyyy-mm-dd)"
+label(sea.deep$year) <- "Observation year"
+label(sea.deep$month) <- "Observation month"
+label(sea.deep$'0') <- "Average temperature at 0m (in Celsius)"
+label(sea.deep$'-20') <- "Average temperature at -20m (in Celsius)"
+label(sea.deep$'-50') <- "Average temperature at -50m (in Celsius)"
+label(sea.deep$'-80') <- "Average temperature at -80m (in Celsius)"
+
+label(sea.deep.historical) <- "Catalonia's seawater historical monthly average temperature at different depths (previous 30 years)"
+label(sea.deep.historical$date) <- "Observation date (yyyy-mm-dd)"
+label(sea.deep.historical$year) <- "Observation year"
+label(sea.deep.historical$month) <- "Observation month"
+label(sea.deep.historical$'0') <- "Average temperature at 0m (in Celsius)"
+label(sea.deep.historical$'-20') <- "Average temperature at -20m (in Celsius)"
+label(sea.deep.historical$'-50') <- "Average temperature at -50m (in Celsius)"
+label(sea.deep.historical$'-80') <- "Average temperature at -80m (in Celsius)"
+```
+## c
+Indicate the dimension of the data-frame and make a descriptive summary of the variables.
+
+```{r}
+# we make sure there are no nulls
+colSums(is.na(sea.deep))
+colSums(is.na(sea.deep.historical))
+
+# dimensions of the data frame
+dim(sea.deep) # 240 observations of 7 variables
+dim(sea.deep.historical) # 240 observations of 7 variables
+
+# descriptive summary
+summary(sea.deep) 
+
+# descriptive analysis of the data set
+attributes(sea.deep)
+describe(sea.deep)
+str(sea.deep)
+
+# with Epi library
+stat.table(list(Year = sea.deep$year), 
+           list(N = count(), 
+              "Mean Tempreature at 0m (in Celcius)" = mean(sea.deep$`0`),
+              "Mean Tempreature at -20m (in Celcius)" = mean(sea.deep$`-20`),
+              "Mean Tempreature at -50m (in Celcius)" = mean(sea.deep$`-50`),
+              "Mean Tempreature at -80m (in Celcius)" = mean(sea.deep$`-80`)),
+           data = sea.deep, margins = T)
+```
+
+## d
+Represent by means of Boxplots the average temperatures by depth and year.
+
+```{r}
+for (i in c(4,5,6,7)){ #for each depth
+  # means of boxplots (average temperature by year)
+  boxplot(sea.deep[,i] ~ sea.deep$year, ylab = 'Avg. temperature (C)', xlab = 'Year', col = 3:7, pch = 16)
+  title(label(sea.deep[i]))
+}
+```
+
+## e
+Calculate the mean, median, standard deviation, and the interquartile range for each of the previous groups (or other statistics if necessary).
+
+```{r}
+# repeat the process for each depth
+for (i in c(4,5,6,7)) {
+  cat(paste("\nstats for ", names(sea.deep[i]), "m depth:", sep = ""))
+  cat(paste("\nmean: ", round(mean(sea.deep[, i]), 2)))
+  cat(paste("\nmedian: ", median(sea.deep[, i])))
+  cat(paste("\nstandard dev: ", round(sd(sea.deep[, i]), 2)))
+  cat(paste("\ninterquartile range: ", IQR(sea.deep[, i])))
+  cat("\n")
+}
+```
+
+## f
+Properly represent the data to be able to see the annual variations of the average temperature in the total depths and years.
+
+```{r}
+annual_var <- aggregate(sea.deep[,4:7], by = list(year = sea.deep$year), FUN = mean)
+
+plot(annual_var[,2] ~ annual_var[,1], 
+     type = "o", col = "red", xlab = "Year", ylab = "Avg. Temperature", 
+     main = "Annual Variation", ylim = c(13, 19))
+lines(annual_var[,3] ~ annual_var[,1], type = "o", col = "blue")
+lines(annual_var[,4] ~ annual_var[,1], type = "o", col = "green")
+lines(annual_var[,5] ~ annual_var[,1], type = "o", col = "orange")
+
+legend(2000, 19, legend=c("0m", "-20m", "-50m", "-80m"),
+       fill = c("red", "blue", "green", "orange"), cex=0.8)
+```
+
+## g
+Export data frame with the new variables created to a new file sheet, for example in NUEVO.xlsx
+
+```{r}
+write.xlsx(sea.deep, "NUEVO.xlsx") # stored in working directory
+```
+
+# Exercise 2
+
+Make two or more graphs with the data from Exercise 1 using functions from two of the following packages:
+gplots https://cran.r-project.org/web/packages/gplots/index.html
+plotrix https://cran.r-project.org/web/packages/plotrix/index.html
+vcd https://cran.r-project.org/web/packages/vcd/index.html
+For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
+
+```{r}
+```
+
+# Exercise 3
+
+Schedule a function that does the following:
+
+## a
+Calculate the temperature between one month and the following month for each year and depth, offer a graph per year and the average of all years studied. You should be able to indicate what years or depths it should represent.
+```{r a, fig.width = 5, fig.heigth = 10}
+temp_mom <- function(df) {
+  monthly_var <- aggregate(df[,4:7], by = list(date = df$date), FUN = mean)
+  monthly_var$year <- format(monthly_var$date, '%Y')
+  monthly_var$month <- format(monthly_var$date, '%m')
+  n <- 1
+  plots = list()
+  for (i in min(monthly_var$year) : max(monthly_var$year)) {
+    t <- monthly_var[which(monthly_var$year == i), ]
+    plots[[n]] <- 
+      ggplot(t, aes(x = month, group = 1)) +
+      geom_line(aes(y = t[,2], color = colnames(monthly_var)[2])) + 
+      geom_line(aes(y = t[,3], color = colnames(monthly_var)[3])) +
+      geom_line(aes(y = t[,4], color = colnames(monthly_var)[4])) +
+      geom_line(aes(y = t[,5], color = colnames(monthly_var)[5])) +
+      ylab('temperature') + xlab('month') + ggtitle(i)
+    n = n + 1
+  }
+  print(aggregate(monthly_var[, 2:5], FUN = mean, by = list(year = monthly_var$year)))
+  do.call(grid.arrange, c(plots, ncol = 2))
+}
+
+temp_mom(sea.deep)
+```
+
+## b
+Calculate the difference between the temperature of each month and the same month of the previous 30 years. Offer a graph for each year and the average of all years studied. You should also be able to indicate what year or depths it should represent.
+```{r}
+temp_diff <- function(df) {
+  
+}
+
+temp_diff(sea.deep)
+```
+
+## c
+Verify the operation of the function with the data frame sea.deep and ensure that everything is correct (optionally you can invent a data frame to verify it, with simulated temperatures using a normal truncated distribution of temperatures and with the same depths).
+```{r}
+```
+
+## d
+Comment on the results found and if you think they have effects on climate change. Optionally, you can build a library to project the future of seawater temperature at a certain temperature for the following years.
+```{r}
+```
+
+## e
+Optionally, look for other data (public repositories) if you think it is necessary and cross them with those already available, especially if they help to better explain the possible climate change that is taking place.
+```{r}
+```
+
+## f
+Optionally, create a library in R to store the previous functions, the source data and place it in a public repository such as Github (https://github.com/).
+```{r}
+```
