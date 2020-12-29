@@ -164,9 +164,10 @@ stat.table(list(Year = sea.deep$year),
 ## d
 Represent by means of Boxplots the average temperatures by depth and year.
 
-```{r}
+```{r fig1, fig.height = 2, fig.width = 4, fig.align = "center"}
 for (i in c(4,5,6,7)){ #for each depth
   # means of boxplots (average temperature by year)
+  par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(2, 2, 2, 2))
   boxplot(sea.deep[,i] ~ sea.deep$year, ylab = 'Avg. temperature (C)', xlab = 'Year', col = 3:7, pch = 16)
   title(label(sea.deep[i]))
 }
@@ -190,17 +191,18 @@ for (i in c(4,5,6,7)) {
 ## f
 Properly represent the data to be able to see the annual variations of the average temperature in the total depths and years.
 
-```{r}
+```{r fig2, fig.height = 2, fig.width = 4, fig.align = "center"}
 annual_var <- aggregate(sea.deep[,4:7], by = list(year = sea.deep$year), FUN = mean)
 
+par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(2, 2, 2, 2))
 plot(annual_var[,2] ~ annual_var[,1], 
      type = "o", col = "red", xlab = "Year", ylab = "Avg. Temperature", 
-     main = "Annual Variation", ylim = c(13, 19))
+     main = "Annual Variation", ylim = c(13, 23))
 lines(annual_var[,3] ~ annual_var[,1], type = "o", col = "blue")
 lines(annual_var[,4] ~ annual_var[,1], type = "o", col = "green")
 lines(annual_var[,5] ~ annual_var[,1], type = "o", col = "orange")
 
-legend(2000, 19, legend=c("0m", "-20m", "-50m", "-80m"),
+legend(2000, 23, legend=c("0m", "-20m", "-50m", "-80m"),
        fill = c("red", "blue", "green", "orange"), cex=0.8)
 ```
 
@@ -219,7 +221,8 @@ plotrix https://cran.r-project.org/web/packages/plotrix/index.html
 vcd https://cran.r-project.org/web/packages/vcd/index.html
 For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
 
-```{r}
+```{r fig3, fig.height = 4, fig.width = 6, fig.align = "center"}
+
 # First aproach of what we could expect about graphs
 for (i in 2:5) {
   ggplot(annual_var, aes(x=years, y=annual_var[,i]))+
@@ -234,6 +237,21 @@ for (i in 2:5) {
  
 }
 
+# heatmap of depth / date (temp)
+hm <- union(
+   cbind(sea.deep[, 1:3], depth = toString('0'), temp = as.numeric(sea.deep$'0')),
+   cbind(sea.deep[, 1:3], depth = '-20', temp = as.numeric(sea.deep$'-20')),
+   cbind(sea.deep[, 1:3], depth = '-50', temp = as.numeric(sea.deep$'-50')),
+   cbind(sea.deep[, 1:3], depth = '-80', temp = as.numeric(sea.deep$'-80'))
+)
+
+ggplot(hm, aes(date, depth, fill= temp)) + 
+  geom_tile()
+
+# correlation between temperatures? scatter plot??
+
+
+
 ```
 
 # Exercise 3
@@ -242,7 +260,7 @@ Schedule a function that does the following:
 
 ## a
 Calculate the temperature between one month and the following month for each year and depth, offer a graph per year and the average of all years studied. You should be able to indicate what years or depths it should represent.
-```{r a, fig.width = 5, fig.heigth = 10}
+```{r fig4, fig.height = 3, fig.width = 4, fig.align = "center"}
 temp_mom <- function(df) {
   monthly_var <- aggregate(df[,4:7], by = list(date = df$date), FUN = mean)
   monthly_var$year <- format(monthly_var$date, '%Y')
@@ -251,17 +269,21 @@ temp_mom <- function(df) {
   plots = list()
   for (i in min(monthly_var$year) : max(monthly_var$year)) {
     t <- monthly_var[which(monthly_var$year == i), ]
-    plots[[n]] <- 
+  #par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(2, 2, 2, 2))
+  # plots[[n]] <- 
+    print(    
       ggplot(t, aes(x = month, group = 1)) +
       geom_line(aes(y = t[,2], color = colnames(monthly_var)[2])) + 
       geom_line(aes(y = t[,3], color = colnames(monthly_var)[3])) +
       geom_line(aes(y = t[,4], color = colnames(monthly_var)[4])) +
       geom_line(aes(y = t[,5], color = colnames(monthly_var)[5])) +
-      ylab('temperature') + xlab('month') + ggtitle(i)
+      ylab('temperature') + xlab('month') + ggtitle(i) + theme(text = element_text(family = "serif"),
+                                                                 legend.title = element_blank()) 
+    )
     n = n + 1
   }
   print(aggregate(monthly_var[, 2:5], FUN = mean, by = list(year = monthly_var$year)))
-  do.call(grid.arrange, c(plots, ncol = 2))
+ # do.call(grid.arrange, c(plots, ncol = 2))
 }
 
 temp_mom(sea.deep)
@@ -280,16 +302,19 @@ temp_diff(sea.deep)
 ## c
 Verify the operation of the function with the data frame sea.deep and ensure that everything is correct (optionally you can invent a data frame to verify it, with simulated temperatures using a normal truncated distribution of temperatures and with the same depths).
 ```{r}
+
 ```
 
 ## d
 Comment on the results found and if you think they have effects on climate change. Optionally, you can build a library to project the future of seawater temperature at a certain temperature for the following years.
 ```{r}
+
 ```
 
 ## e
 Optionally, look for other data (public repositories) if you think it is necessary and cross them with those already available, especially if they help to better explain the possible climate change that is taking place.
 ```{r}
+
 ```
 
 ## f
