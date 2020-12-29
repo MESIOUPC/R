@@ -220,6 +220,20 @@ vcd https://cran.r-project.org/web/packages/vcd/index.html
 For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
 
 ```{r}
+# First aproach of what we could expect about graphs
+for (i in 2:5) {
+  ggplot(annual_var, aes(x=years, y=annual_var[,i]))+
+  geom_segment(aes(x = years, xend=years, y=0, yend=annual_var[,i]), color="grey")+
+  geom_point(color="orange", size=4)+
+  theme_light()+
+  theme(panel.grid.major.x = element_blank(),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank())+
+  xlab("Year")+
+  ylab("Temperature")
+ 
+}
+
 ```
 
 # Exercise 3
