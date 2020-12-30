@@ -18,6 +18,7 @@ library(dplyr)
 library(gridExtra)
 library(Epi)
 library(doBy)
+library(truncnorm)
 
 #set file's directory as working directory 
 setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
@@ -225,7 +226,7 @@ plotrix https://cran.r-project.org/web/packages/plotrix/index.html
 vcd https://cran.r-project.org/web/packages/vcd/index.html
 For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
 
-```{r fig3a, fig.height = 3, fig.width = 6, fig.align = "center"}
+```{r fig3a, fig.height = 2, fig.width = 5, fig.align = "center"}
 
 # lollipop graph of average temperatures during the years
 for (i in 2:5) {
@@ -343,9 +344,25 @@ temp_diff <- function(df, dfh) {
 
 ## c
 Verify the operation of the function with the data frame sea.deep and ensure that everything is correct (optionally you can invent a data frame to verify it, with simulated temperatures using a normal truncated distribution of temperatures and with the same depths).
-```{r}
+```{r fig6, fig.height = 2, fig.width = 3, fig.align = "center"}
+
+sim <- sea.deep[,1:3]
+sim$'0' <- rtruncnorm(240, mean = mean(sea.deep$'0'), sd(sea.deep$'0'))
+sim$'-20' <- rtruncnorm(240, mean = mean(sea.deep$'-20'), sd(sea.deep$'-20'))
+sim$'-50' <- rtruncnorm(240, mean = mean(sea.deep$'-50'), sd(sea.deep$'-50'))
+sim$'-80' <- rtruncnorm(240, mean = mean(sea.deep$'-80'), sd(sea.deep$'-80'))
+
+sim.historical <- sea.deep.historical[,1:3]
+sim.historical$'0' <- rtruncnorm(240, mean = mean(sea.deep.historical$'0'), sd(sea.deep.historical$'0'))
+sim.historical$'-20' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-20'), sd(sea.deep.historical$'-20'))
+sim.historical$'-50' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-50'), sd(sea.deep.historical$'-50'))
+sim.historical$'-80' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-80'), sd(sea.deep.historical$'-80'))
+  
 temp_mom(sea.deep)
 temp_diff(sea.deep, sea.deep.historical)
+
+temp_mom(sim)
+temp_diff(sim, sim.historical)
 
 ```
 
