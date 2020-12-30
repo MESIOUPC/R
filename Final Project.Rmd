@@ -1,7 +1,7 @@
 
 ---
 title: "R Final Project 2020-2021"
-author: "Nuria Saavedra Mir? and Ferran Vilar Pag?s"
+author: "Nuria Saavedra Miro nd Ferran Vilar Pages"
 date: "December 31, 2020"
 output: pdf_document
 ---
@@ -23,6 +23,10 @@ library(doBy)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
 getwd()
 ```
+
+# Introduction
+
+Exploratory data analysis about Catalonia's seawater historical monthly average temperature at different depths (at 0, -20, -50, and -80 meters). 
 
 # Exercise 1
 
@@ -221,11 +225,11 @@ plotrix https://cran.r-project.org/web/packages/plotrix/index.html
 vcd https://cran.r-project.org/web/packages/vcd/index.html
 For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
 
-```{r fig3, fig.height = 4, fig.width = 6, fig.align = "center"}
+```{r fig3a, fig.height = 3, fig.width = 6, fig.align = "center"}
 
-# First aproach of what we could expect about graphs
+# lollipop graph of average temperatures during the years
 for (i in 2:5) {
-  ggplot(annual_var, aes(x=years, y=annual_var[,i]))+
+  print(ggplot(annual_var, aes(x=years, y=annual_var[,i]))+
   geom_segment(aes(x = years, xend=years, y=0, yend=annual_var[,i]), color="grey")+
   geom_point(color="orange", size=4)+
   theme_light()+
@@ -234,23 +238,32 @@ for (i in 2:5) {
         axis.ticks.x = element_blank())+
   xlab("Year")+
   ylab("Temperature")
- 
+  )
 }
 
-# heatmap of depth / date (temp)
-hm <- union(
-   cbind(sea.deep[, 1:3], depth = toString('0'), temp = as.numeric(sea.deep$'0')),
-   cbind(sea.deep[, 1:3], depth = '-20', temp = as.numeric(sea.deep$'-20')),
-   cbind(sea.deep[, 1:3], depth = '-50', temp = as.numeric(sea.deep$'-50')),
-   cbind(sea.deep[, 1:3], depth = '-80', temp = as.numeric(sea.deep$'-80'))
-)
+```
+```{r fig3b, fig.height = 2, fig.width = 9, fig.align = "center"}
 
-ggplot(hm, aes(date, depth, fill= temp)) + 
-  geom_tile()
+# heatmap of depth / date (temp)
+hm <- 
+  union(
+  union(
+   cbind(sea.deep[, 1:3], depth = 0, temp = as.numeric(sea.deep$'0')),
+   cbind(sea.deep[, 1:3], depth = -20, temp = as.numeric(sea.deep$'-20'))),
+  union(
+   cbind(sea.deep[, 1:3], depth = -50, temp = as.numeric(sea.deep$'-50')),
+   cbind(sea.deep[, 1:3], depth = -80, temp = as.numeric(sea.deep$'-80')))
+  )
+
+ggplot(hm, aes(year, factor(depth), fill= temp)) + 
+  geom_tile() + 
+  scale_fill_gradient(low="#d0e8f2", high="#456268") + ylab('depth') + ggtitle('Temperatures over the years') + theme(text = element_text(family = "serif")) 
+
+```
+
+```{r fig3c, fig.height = 2, fig.width = 9, fig.align = "center"}
 
 # correlation between temperatures? scatter plot??
-
-
 
 ```
 
@@ -319,5 +332,5 @@ Optionally, look for other data (public repositories) if you think it is necessa
 
 ## f
 Optionally, create a library in R to store the previous functions, the source data and place it in a public repository such as Github (https://github.com/).
-```{r}
-```
+
+The repository can be found at https://github.com/MESIOUPC/R
