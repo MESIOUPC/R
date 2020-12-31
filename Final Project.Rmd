@@ -244,6 +244,7 @@ for (i in 2:5) {
 }
 
 ```
+
 ```{r fig3b, fig.height = 4, fig.width = 9, fig.align = "center"}
 
 # heatmap of depth / date (temp)
@@ -278,6 +279,11 @@ geom_point() +
   coord_cartesian(xlim=c(10,25), ylim = c(10,25)) + geom_smooth(method = "lm")
 
 ```
+# Graph interpretation
+
+The graphs show a clear upward trend in the average temperature at all depths analyzed. While it is true that the atmospheric temperature has increased steadily and uninterruptedly over time, as indicated at the beginning of the report, the sea temperature has not increased at the same rate. 
+
+It seems that the consequences of the concentration greenhouse gases during the years prior to the analysis period are now manifesting themselves in a clear increase in the temperatures registered in the sea. Although no extreme temperatures are recorded in periods of maximum solar radiation as would be July and August in Catalonia, its impact is noted during the months of lower solar incidence when the water is becoming less cold in all layers. The most notorious is the first, the surface.
 
 # Exercise 3
 
