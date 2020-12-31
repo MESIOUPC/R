@@ -20,14 +20,15 @@ library(Epi)
 library(doBy)
 library(truncnorm)
 
-#set file's directory as working directory 
-setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
-getwd()
 ```
 
 # Introduction
 
-Exploratory data analysis about Catalonia's seawater historical monthly average temperature at different depths (at 0, -20, -50, and -80 meters). 
+There is an unmistakable rise in temperatures all over the planet and has been a sustained change over time since pre-industrial period, data have corroborated. There are some doubts about the speed of this change in the future, its consecuences on a regional scale, and the efect of that variation conditions could cause. Global warming isn't just obvious from the surface of the earth, but a great recource for life is also affected. The seas and ocenas.
+
+Seawater absorb some of the energy given by the sunlight and store it as heat. This ocures at the surface, but eventually spreads deeper. Watter has a much higher heat capacity than air, so energy from light can be absorbed by the sea at a larger amounts with only a slight increase of temperatures given its continious water currents. Oceans temperature plays an important role in the Earth's climate system, because heat from the sea surface water provides energy for storms and thereby influences weather patterns.
+
+The aim of this report is to show evidences about climate change focusing on the warming of the oceans by analyseing Catalonia's seawater historical monthly average temperature at different depths (at 0, -20, -50, and -80 meters). Since effects of increasing greenhouse gas concentrations and trapping more energy from the sun occur over centuries, data analysed from 2000 to 2019 show the efects of the gas emissions made 30 years ago.
 
 # Exercise 1
 
@@ -112,15 +113,13 @@ for (i in 4:7) {
 }
 ```
 
-## b
-
 Name the variables according to the specifications in the dataset and place labels describing units and what each variable and case is (years, months, depth, etc.). You should place it properly according to the format of the data.
 
+## b
 Use the function label of package Hmsic to tag variables (using of data frame sea.deep).
 
 ```{r}
-label(sea.deep) <- 
-  "Catalonia's seawater monthly average temperature at different depths (2000-2019)"
+label(sea.deep) <- "Catalonia's seawater monthly average temperature at different depths (2000-2019)"
 label(sea.deep$date) <- "Observation date (yyyy-mm-dd)"
 label(sea.deep$year) <- "Observation year"
 label(sea.deep$month) <- "Observation month"
@@ -129,9 +128,7 @@ label(sea.deep$'-20') <- "Average temperature at -20m (in Celsius)"
 label(sea.deep$'-50') <- "Average temperature at -50m (in Celsius)"
 label(sea.deep$'-80') <- "Average temperature at -80m (in Celsius)"
 
-label(sea.deep.historical) <- 
-  "Catalonia's seawater historical monthly average temperature at different depths
-(previous 30 years)"
+label(sea.deep.historical) <- "Catalonia's seawater historical monthly average temperature at different depths (previous 30 years)"
 label(sea.deep.historical$date) <- "Observation date (yyyy-mm-dd)"
 label(sea.deep.historical$year) <- "Observation year"
 label(sea.deep.historical$month) <- "Observation month"
@@ -140,9 +137,7 @@ label(sea.deep.historical$'-20') <- "Average temperature at -20m (in Celsius)"
 label(sea.deep.historical$'-50') <- "Average temperature at -50m (in Celsius)"
 label(sea.deep.historical$'-80') <- "Average temperature at -80m (in Celsius)"
 ```
-
 ## c
-
 Indicate the dimension of the data-frame and make a descriptive summary of the variables.
 
 ```{r}
@@ -173,20 +168,18 @@ stat.table(list(Year = sea.deep$year),
 ```
 
 ## d
-
 Represent by means of Boxplots the average temperatures by depth and year.
 
 ```{r fig1, fig.height = 2, fig.width = 4, fig.align = "center"}
 for (i in c(4,5,6,7)){ #for each depth
   # means of boxplots (average temperature by year)
   par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(4, 4, 2, 2))
-  boxplot(sea.deep[,i] ~ sea.deep$year, ylab = 'Avg. Temperature (C)', xlab = 'Year', col = 3:7, pch = 16)
+  boxplot(sea.deep[,i] ~ sea.deep$year, ylab = 'Avg. temperature (C)', xlab = 'Year', col = 3:7, pch = 16)
   title(label(sea.deep[i]))
 }
 ```
 
 ## e
-
 Calculate the mean, median, standard deviation, and the interquartile range for each of the previous groups (or other statistics if necessary).
 
 ```{r}
@@ -202,15 +195,14 @@ for (i in c(4,5,6,7)) {
 ```
 
 ## f
-
 Properly represent the data to be able to see the annual variations of the average temperature in the total depths and years.
 
 ```{r fig2, fig.height = 2, fig.width = 4, fig.align = "center"}
 annual_var <- aggregate(sea.deep[,4:7], by = list(year = sea.deep$year), FUN = mean)
 
-par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(4, 4, 2, 2))
+par(family = "serif", font = 1, font.main = 1, font.lab = 1, font.axis = 1, cex = 0.75, mar = c(2, 2, 2, 2))
 plot(annual_var[,2] ~ annual_var[,1], 
-     type = "o", col = "red", xlab = "Year", ylab = "Avg. Temperature  (C)", 
+     type = "o", col = "red", xlab = "Year", ylab = "Avg. Temperature", 
      main = "Annual Variation", ylim = c(13, 20))
 lines(annual_var[,3] ~ annual_var[,1], type = "o", col = "blue")
 lines(annual_var[,4] ~ annual_var[,1], type = "o", col = "green")
@@ -221,7 +213,6 @@ legend(2000, 20, legend=c("0m", "-20m", "-50m", "-80m"),
 ```
 
 ## g
-
 Export data frame with the new variables created to a new file sheet, for example in NUEVO.xlsx
 
 ```{r}
@@ -236,10 +227,6 @@ plotrix https://cran.r-project.org/web/packages/plotrix/index.html
 vcd https://cran.r-project.org/web/packages/vcd/index.html
 For at least one of the graphs you should use the study group variable (depth or year) and for the other one a couple of numerical variables. Present the syntax and interpret both graphs.
 
-## a
-
-Timeline of average temperatures during the years.
-
 ```{r fig3a, fig.height = 2, fig.width = 5, fig.align = "center"}
 
 # lollipop graph of average temperatures during the years
@@ -250,19 +237,14 @@ for (i in 2:5) {
   theme_light()+
   theme(panel.grid.major.x = element_blank(),
         panel.border = element_blank(),
-        axis.ticks.x = element_blank(), text = element_text(family = "serif")) +
+        axis.ticks.x = element_blank())+
   xlab("Year")+
-  ylab("Temperature (C)")
-  )
+  ylab("Temperature")
+  ) + theme(text = element_text(family = "serif")) 
 }
 
 ```
-
-## b
-
-Heatmap of yearly temperatures by depth.
-
-```{r fig3b, fig.height = 4, fig.width = 9.5, fig.align = "center"}
+```{r fig3b, fig.height = 4, fig.width = 9, fig.align = "center"}
 
 # heatmap of depth / date (temp)
 hm <- 
@@ -282,25 +264,17 @@ colnames(hm) <- c('depth', 'year', 'temp')
 ggplot(hm, aes(year, factor(depth), fill = temp)) + 
   geom_tile(aes()) + 
   geom_text(aes(label = round(temp,1))) +
-  scale_fill_gradient(low="#d0e8f2", high="#456268") + ylab('depth') +
-  ggtitle('Average Temperatures Year Over Year') + 
-  theme(text = element_text(family = "serif")) 
+  scale_fill_gradient(low="#d0e8f2", high="#456268") + ylab('depth') + ggtitle('Average Temperatures Year Over Year') + theme(text = element_text(family = "serif")) 
 
 ```
-
-## c
-
-Scatterplot showing correlation between surface temperature (0m) and temperature at -80m.
 
 ```{r fig3c, fig.height = 4, fig.width = 4, fig.align = "center"}
 
 ggplot(sea.deep, aes(x = sea.deep$'0', y = sea.deep$'-80')) +
 geom_point() + 
-  geom_abline(aes(intercept = mean(sea.deep$'-80') - mean(sea.deep$'0'), slope = 1), 
-              linetype = 2, color = "red") + 
+  geom_abline(aes(intercept = mean(sea.deep$'-80') - mean(sea.deep$'0'), slope = 1), linetype = 2, color = "red") +
   scale_fill_gradient(low="#d0e8f2", high="#456268") + xlab('0m') + ylab('-80m') +
-  ggtitle('Correlation Between Depth Differences in Temperature') + 
-  theme(text = element_text(family = "serif")) + 
+  ggtitle('Correlation Between Depth Differences in Temperature') + theme(text = element_text(family = "serif")) + 
   coord_cartesian(xlim=c(10,25), ylim = c(10,25)) + geom_smooth(method = "lm")
 
 ```
@@ -310,9 +284,8 @@ geom_point() +
 Schedule a function that does the following:
 
 ## a
-
 Calculate the temperature between one month and the following month for each year and depth, offer a graph per year and the average of all years studied. You should be able to indicate what years or depths it should represent.
-```{r }
+```{r fig4, fig.height = 3, fig.width = 4, fig.align = "center"}
 
 #month over month temperature variation
 temp_mom <- function(df) {
@@ -328,8 +301,8 @@ temp_mom <- function(df) {
       geom_line(aes(y = t[,3], color = colnames(monthly_var)[3])) +
       geom_line(aes(y = t[,4], color = colnames(monthly_var)[4])) +
       geom_line(aes(y = t[,5], color = colnames(monthly_var)[5])) +
-      ylab('temperature') + xlab('month') + ggtitle(i) + 
-        theme(text = element_text(family = "serif"), legend.title = element_blank()) 
+      ylab('temperature') + xlab('month') + ggtitle(i) + theme(text = element_text(family = "serif"),
+                                                                 legend.title = element_blank()) 
     )
     n = n + 1
   }
@@ -338,9 +311,8 @@ temp_mom <- function(df) {
 ```
 
 ## b
-
 Calculate the difference between the temperature of each month and the same month of the previous 30 years. Offer a graph for each year and the average of all years studied. You should also be able to indicate what year or depths it should represent.
-```{r }
+```{r fig5, fig.height = 3, fig.width = 4, fig.align = "center"}
 
 temp_diff <- function(df, dfh) {
   var <- aggregate(df[,4:7], by = list(date = df$date), FUN = mean)
@@ -361,8 +333,8 @@ temp_diff <- function(df, dfh) {
       geom_line(aes(y = t[,9], color = colnames(var)[9])) +
       geom_line(aes(y = t[,10], color = colnames(var)[10])) +
       geom_line(aes(y = t[,11], color = colnames(var)[11])) +
-      ylab('temperature') + xlab('month') + ggtitle(i) + 
-        theme(text = legend.title = element_blank()) 
+      ylab('temperature') + xlab('month') + ggtitle(i) + theme(text = element_text(family = "serif"),
+                                                                 legend.title = element_blank()) 
     )
     n = n + 1
    }
@@ -373,64 +345,38 @@ temp_diff <- function(df, dfh) {
 
 ## c
 Verify the operation of the function with the data frame sea.deep and ensure that everything is correct (optionally you can invent a data frame to verify it, with simulated temperatures using a normal truncated distribution of temperatures and with the same depths).
-
-Creation of simulated temperatures using normal truncated distribution.
-
-```{r }
+```{r fig6, fig.height = 2, fig.width = 3, fig.align = "center"}
 
 sim <- sea.deep[,1:3]
+sim$'0' <- rtruncnorm(240, mean = mean(sea.deep$'0'), sd(sea.deep$'0'))
+sim$'-20' <- rtruncnorm(240, mean = mean(sea.deep$'-20'), sd(sea.deep$'-20'))
+sim$'-50' <- rtruncnorm(240, mean = mean(sea.deep$'-50'), sd(sea.deep$'-50'))
+sim$'-80' <- rtruncnorm(240, mean = mean(sea.deep$'-80'), sd(sea.deep$'-80'))
+
 sim.historical <- sea.deep.historical[,1:3]
-
-
-for (i in c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')) {
-  sim[which(sea.deep$month == i), 4] <- 
-    rtruncnorm(20, mean = mean(sea.deep[which(sea.deep$month == i), 4]), sd(sea.deep[which(sea.deep$month == i), 4]))
-  sim[which(sea.deep$month == i), 5] <- 
-    rtruncnorm(20, mean = mean(sea.deep[which(sea.deep$month == i), 5]), sd(sea.deep[which(sea.deep$month == i), 5]))
-  sim[which(sea.deep$month == i), 6] <- 
-    rtruncnorm(20, mean = mean(sea.deep[which(sea.deep$month == i), 6]), sd(sea.deep[which(sea.deep$month == i), 6]))
-  sim[which(sea.deep$month == i), 7] <- 
-    rtruncnorm(20, mean = mean(sea.deep[which(sea.deep$month == i), 7]), sd(sea.deep[which(sea.deep$month == i), 7]))
-
-  sim.historical[which(sea.deep.historical$month == i), 4] <- 
-    rtruncnorm(20, mean = mean(sea.deep.historical[which(sea.deep.historical$month == i), 4]), sd(sea.deep.historical[which(sea.deep.historical$month == i), 4]))
-  sim.historical[which(sea.deep.historical$month == i), 5] <- 
-    rtruncnorm(20, mean = mean(sea.deep.historical[which(sea.deep.historical$month == i), 5]), sd(sea.deep.historical[which(sea.deep.historical$month == i), 5]))
-  sim.historical[which(sea.deep.historical$month == i), 6] <- 
-    rtruncnorm(20, mean = mean(sea.deep.historical[which(sea.deep.historical$month == i), 6]), sd(sea.deep.historical[which(sea.deep.historical$month == i), 6]))
-  sim.historical[which(sea.deep.historical$month == i), 7] <- 
-    rtruncnorm(20, mean = mean(sea.deep.historical[which(sea.deep.historical$month == i), 7]), sd(sea.deep.historical[which(sea.deep.historical$month == i), 7]))
-}
-
-
-```
-
-Function testing with the original data set:
-
-```{r fig6, fig.height = 2, fig.width = 3.5, fig.align = "center"}
+sim.historical$'0' <- rtruncnorm(240, mean = mean(sea.deep.historical$'0'), sd(sea.deep.historical$'0'))
+sim.historical$'-20' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-20'), sd(sea.deep.historical$'-20'))
+sim.historical$'-50' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-50'), sd(sea.deep.historical$'-50'))
+sim.historical$'-80' <- rtruncnorm(240, mean = mean(sea.deep.historical$'-80'), sd(sea.deep.historical$'-80'))
+  
 temp_mom(sea.deep)
 temp_diff(sea.deep, sea.deep.historical)
-```
 
-Function testing with the simulated data set:
-
-```{r fig7, fig.height = 2, fig.width = 3.5, fig.align = "center"}
 temp_mom(sim)
 temp_diff(sim, sim.historical)
+
+which.min(sea.deep$`0`)
+
 ```
 
 ## d
-
 Comment on the results found and if you think they have effects on climate change. Optionally, you can build a library to project the future of seawater temperature at a certain temperature for the following years.
-
 ```{r}
 
 ```
 
 ## e
-
 Optionally, look for other data (public repositories) if you think it is necessary and cross them with those already available, especially if they help to better explain the possible climate change that is taking place.
-
 ```{r}
 
 ```
